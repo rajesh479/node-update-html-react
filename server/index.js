@@ -64,6 +64,28 @@ if (isProduction) {
   app.use(express.static(path.join(__dirname, '../dist'), { index: false }));
 }
 
+// Receive payload from client
+app.post('/api/receive-payload', (req, res) => {
+  const payload = req.body;
+
+  console.log('Received payload from client:', payload);
+
+  
+
+  // Process the payload
+  const response = {
+    success: true,
+    message: 'Payload received successfully',
+    receivedData: payload,
+    timestamp: new Date().toISOString(),
+    processedBy: 'Express Server'
+  };
+
+  
+
+  // Send response back to client
+  res.json(response);
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
