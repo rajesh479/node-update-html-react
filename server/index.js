@@ -59,9 +59,9 @@ const fetchAuth = async () => {
 
 
 
-// Serve static files in production
+// Serve static files in production (but not index.html - that's handled by catch-all route)
 if (isProduction) {
-  app.use(express.static(path.join(__dirname, '../dist')));
+  app.use(express.static(path.join(__dirname, '../dist'), { index: false }));
 }
 
 
@@ -91,30 +91,24 @@ app.get('*', async (req, res) => {
     let html = await fs.readFile(htmlPath, 'utf-8');
     console.log('HTML file read successfully, length:', html.length);
 
-    // Check if the placeholder exists in HTML
-    const hasPlaceholder = html.includes('<input type="hidden" id="userData" />');
-    console.log('Placeholder exists in HTML:', hasPlaceholder);
-
     // Fetch auth data
     console.log('Fetching auth data...');
     const userData = await fetchAuth();
     console.log('Auth data received:', JSON.stringify(userData));
-    console.log('Auth data type:', typeof userData);
 
     if (!userData) {
       console.error('WARNING: userData is null or undefined');
     }
 
     // Inject userData into the hidden input field
-    const originalInput = '<input type="hidden" id="userData" />';
+    // Use regex to match both minified and non-minified versions
     const userDataJson = JSON.stringify(userData || {});
     const escapedJson = userDataJson.replace(/'/g, "&#39;");
-    const newInput = `<input type="hidden" id="userData" value='${escapedJson}' />`;
+    const newInput = `<input type="hidden" id="userData" value='${escapedJson}'/>`;
 
-    console.log('Original input:', originalInput);
-    console.log('New input:', newInput);
-
-    const updatedHtml = html.replace(originalInput, newInput);
+    // Match both <input type="hidden" id="userData" /> and <input type="hidden" id="userData"/>
+    const placeholderRegex = /<input type="hidden" id="userData"\s*\/?>/;
+    const updatedHtml = html.replace(placeholderRegex, newInput);
 
     const wasReplaced = updatedHtml !== html;
     console.log('Replacement successful:', wasReplaced);
