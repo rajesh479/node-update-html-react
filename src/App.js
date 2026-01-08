@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 
 function App() {
   const [userData, setUserData] = useState(null);
+    const [payLoad, setPayload] = useState({name:'rajesh', age:'25'});
+  const [serverResponse, setServerResponse] = useState(null);
 
   useEffect(() => {
     // Retrieve userData from hidden input field
